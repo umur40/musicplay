@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Music Player</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .audio-player {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #notification {
+            background: #ff4757;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .choose-song-btn {
+            background: linear-gradient(45deg, #ff7e5f, #feb47b);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .choose-song-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .playlist {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .playlist-item {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .playlist-item.active {
+            background: linear-gradient(45deg, rgba(255, 126, 95, 0.7), rgba(254, 180, 123, 0.7));
+            font-weight: bold;
+        }
+
+        .playlist::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .playlist::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .playlist::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .progress-bar::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #ff7e5f;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .stop-btn {
+            background: rgba(255, 71, 87, 0.3);
+        }
+
+        .stop-btn:hover {
+            background: rgba(255, 71, 87, 0.5);
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+        }
+
+        .volume-display {
+            font-size: 14px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .now-playing {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            color: #ff4757;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="audio-player">
+        <div id="notification" class="notification" style="display: none;">
+            <span id="notification-text"></span>
+            <button class="close-btn" onclick="hideNotification()">×</button>
+        </div>
+
+        <div id="now-playing" class="now-playing">No song selected</div>
+
+        <input type="file" id="fileInput" multiple accept="audio/*" hidden>
+        <button onclick="document.getElementById('fileInput').click()" class="choose-song-btn">
+            <i class="fas fa-folder-open"></i> Choose Music
+        </button>        
+
+        <div class="playlist" id="playlist"></div>
+
+        <div class="progress-container">
+            <span id="current-time">0:00</span>
+            <input type="range" id="progress-bar" min="0" max="100" value="0" class="progress-bar">
+            <span id="total-duration">0:00</span>
+        </div>
+
+        <div class="player-controls">
+            <button class="control-btn" onclick="prevTrack()">
+                <i class="fas fa-backward"></i>
+            </button>
+            <button class="control-btn" onclick="playPause()">
+                <i class="fas fa-play" id="play-icon"></i>
+            </button>
+            <button class="control-btn" onclick="nextTrack()">
+                <i class="fas fa-forward"></i>
+            </button>
+            <button class="control-btn stop-btn" onclick="stopPlayback()">
+                <i class="fas fa-stop" id="stop-icon"></i>
+            </button>
+        </div>
+
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Volume</span>
+                <span id="volume-display">50%</span>
+            </div>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" class="slider">
+        </div>
+
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>Speed</span>
+                <span id="speed-display">1x</span>
+            </div>
+            <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" class="slider">
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const fileInput = document.getElementById('fileInput');
+        const playlist = document.getElementById('playlist');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalDurationEl = document.getElementById('total-duration');
+        const playIcon = document.getElementById('play-icon');
+        const volumeSlider = document.getElementById('volume');
+        const volumeDisplay = document.getElementById('volume-display');
+        const speedSlider = document.getElementById('speed');
+        const speedDisplay = document.getElementById('speed-display');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        const nowPlayingEl = document.getElementById('now-playing');
+
+        // Audio variables
+        const audio = new Audio();
+        let tracks = [];
+        let currentTrackIndex = -1;
+        let isPlaying = false;
+        let isDraggingProgress = false;
+
+        // Event Listeners
+        fileInput.addEventListener('change', loadFiles);
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', nextTrack);
+        audio.addEventListener('loadedmetadata', updateDuration);
+        progressBar.addEventListener('input', startSeek);
+        progressBar.addEventListener('change', seekAudio);
+        volumeSlider.addEventListener('input', changeVolume);
+        speedSlider.addEventListener('input', changeSpeed);
+
+        // Functions
+        function loadFiles(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            tracks = [];
+            playlist.innerHTML = '';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith('audio/')) continue;
+
+                const track = {
+                    name: file.name.replace(/\.[^/.]+$/, ""),
+                    file: URL.createObjectURL(file)
+                };
+                tracks.push(track);
+
+                const playlistItem = document.createElement('div');
+                playlistItem.className = 'playlist-item';
+                playlistItem.innerHTML = `
+                    <span>${track.name}</span>
+                    <button class="delete-btn" onclick="removeTrack(${i})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                playlistItem.addEventListener('click', () => playTrack(i));
+                playlist.appendChild(playlistItem);
+            }
+
+            if (tracks.length > 0) {
+                showNotification(`Loaded ${tracks.length} track(s)`);
+                playTrack(0);
+            }
+        }
+
+        function playTrack(index) {
+            if (index < 0 || index >= tracks.length) return;
+
+            // Update UI
+            const items = document.querySelectorAll('.playlist-item');
+            items.forEach(item => item.classList.remove('active'));
+            items[index].classList.add('active');
+            nowPlayingEl.textContent = tracks[index].name;
+
+            // Play audio
+            currentTrackIndex = index;
+            audio.src = tracks[index].file;
+            audio.load();
+            audio.play()
+                .then(() => {
+                    isPlaying = true;
+                    playIcon.className = 'fas fa-pause';
+                })
+                .catch(error => {
+                    showNotification('Playback failed: ' + error.message);
+                });
+        }
+
+        function playPause() {
+            if (tracks.length === 0) {
+                showNotification('No tracks loaded');
+                return;
+            }
+
+            if (audio.paused) {
+                if (currentTrackIndex === -1) {
+                    playTrack(0);
+                } else {
+                    audio.play()
+                        .then(() => {
+                            isPlaying = true;
+                            playIcon.className = 'fas fa-pause';
+                        });
+                }
+            } else {
+                audio.pause();
+                isPlaying = false;
+                playIcon.className = 'fas fa-play';
+            }
+        }
+
+        function stopPlayback() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            playIcon.className = 'fas fa-play';
+            progressBar.value = 0;
+            currentTimeEl.textContent = '0:00';
+        }
+
+        function prevTrack() {
+            if (tracks.length === 0) return;
+            
+            let newIndex = currentTrackIndex - 1;
+            if (newIndex < 0) newIndex = tracks.length - 1;
+            
+            playTrack(newIndex);
+        }
+
+        function nextTrack() {
+            if (tracks.length === 0) return;
+            
+            let newIndex = currentTrackIndex + 1;
+            if (newIndex >= tracks.length) newIndex = 0;
+            
+            playTrack(newIndex);
+        }
+
+        function updateProgress() {
+            if (!isDraggingProgress) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = isNaN(progress) ? 0 : progress;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+        }
+
+        function updateDuration() {
+            totalDurationEl.textContent = formatTime(audio.duration);
+        }
+
+        function startSeek() {
+            isDraggingProgress = true;
+        }
+
+        function seekAudio() {
+            const seekTime = (progressBar.value / 100) * audio.duration;
+            audio.currentTime = seekTime;
+            isDraggingProgress = false;
+        }
+
+        function changeVolume() {
+            audio.volume = volumeSlider.value;
+            volumeDisplay.textContent = `${Math.round(volumeSlider.value * 100)}%`;
+        }
+
+        function changeSpeed() {
+            audio.playbackRate = speedSlider.value;
+            speedDisplay.textContent = `${speedSlider.value}x`;
+        }
+
+        function removeTrack(index) {
+            event.stopPropagation(); // Prevent triggering the playTrack function
+            
+            // Remove track from array
+            tracks.splice(index, 1);
+            
+            // Update playlist UI
+            playlist.innerHTML = '';
+            tracks.forEach((track, i) => {
+                const playlistItem = document.createElement('div');
+                playlistItem.className = 'playlist-item';
+                if (i === currentTrackIndex) playlistItem.classList.add('active');
+                playlistItem.innerHTML = `
+                    <span>${track.name}</span>
+                    <button class="delete-btn" onclick="removeTrack(${i})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                playlistItem.addEventListener('click', () => playTrack(i));
+                playlist.appendChild(playlistItem);
+            });
+            
+            // Handle currently playing track being removed
+            if (index === currentTrackIndex) {
+                if (tracks.length > 0) {
+                    const newIndex = Math.min(index, tracks.length - 1);
+                    playTrack(newIndex);
+                } else {
+                    stopPlayback();
+                    currentTrackIndex = -1;
+                    nowPlayingEl.textContent = 'No song selected';
+                }
+            } else if (index < currentTrackIndex) {
+                currentTrackIndex--;
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function showNotification(message) {
+            notificationText.textContent = message;
+            notification.style.display = 'flex';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(hideNotification, 3000);
+        }
+
+        function hideNotification() {
+            notification.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
